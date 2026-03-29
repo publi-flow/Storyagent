@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StoryAgent — Cobertura de Eventos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --border: #2a2a35;
+    --accent: #e8c97a;
+    --accent2: #c4a55a;
+    --text: #f0f0f5;
+    --muted: #6b6b80;
+    --soft: #9090a8;
+    --danger: #e87a7a;
+    --success: #7ae8b0;
+    --info: #7ab8e8;
+    --photo: #e8c97a;
+    --video: #e87ab8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+  header {
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    color: #0d0d0f;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .logo-text span { color: var(--accent); }
+
+  .header-badge {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  main { flex: 1; padding: 2rem; max-width: 900px; margin: 0 auto; width: 100%; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex; gap: 0.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 2rem;
+  }
+
+  .tab {
+    flex: 1; padding: 0.6rem 1rem;
+    background: transparent;
+    border: none; border-radius: 9px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  }
+  .tab.active {
+    background: var(--surface2);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+  .tab:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* ── FORMS ── */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.02em;
+  }
+  .section-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-grid.full { grid-template-columns: 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .field label {
+    font-size: 0.78rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--soft);
+  }
+
+  .field input, .field select, .field textarea {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.7rem 1rem;
+    transition: border-color 0.2s;
+    outline: none;
+    resize: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+  }
+  .field select option { background: var(--surface2); }
+
+  /* chips */
+  .chip-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip {
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--soft);
+    background: var(--surface);
+    user-select: none;
+  }
+  .chip.selected {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(232,201,122,0.1);
+  }
+
+  /* btn */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.85rem 2rem;
+    border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0d0d0f;
+  }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--soft);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-sm { padding: 0.5rem 1rem; font-size: 0.82rem; }
+
+  /* ── LOADING ── */
+  .loading-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    gap: 1.5rem;
+    text-align: center;
+  }
+  .loading-screen.visible { display: flex; }
+
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--soft);
+  }
+
+  /* ── ROTEIRO ── */
+  .event-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  .event-type-badge {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+  .event-info { flex: 1; }
+  .event-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .event-meta { color: var(--muted); font-size: 0.85rem; }
+
+  .progress-bar-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .progress-label { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
+  .progress-track {
+    flex: 1; height: 6px;
+    background: var(--border);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 100px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-count { font-size: 0.82rem; color: var(--accent); font-weight: 600; white-space: nowrap; }
+
+  /* Story Card */
+  .story-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .story-card.done { border-color: rgba(122,232,176,0.4); opacity: 0.7; }
+  .story-card.done .story-body { opacity: 0.5; }
+
+  .story-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+  }
+
+  .story-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .story-card.done .story-num {
+    background: rgba(122,232,176,0.15);
+    border-color: rgba(122,232,176,0.5);
+    color: var(--success);
+  }
+
+  .story-title-row { flex: 1; }
+  .story-title {
+    font-weight: 600; font-size: 0.95rem;
+    line-height: 1.3;
+  }
+  .story-momento { font-size: 0.75rem; color: var(--muted); margin-top: 0.1rem; }
+
+  .media-badge {
+    padding: 0.2rem 0.65rem;
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .media-badge.foto { background: rgba(232,201,122,0.15); color: var(--photo); }
+  .media-badge.video { background: rgba(232,122,184,0.15); color: var(--video); }
+
+  .check-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .check-btn:hover { border-color: var(--success); }
+  .story-card.done .check-btn {
+    background: rgba(122,232,176,0.2);
+    border-color: var(--success);
+    color: var(--success);
+  }
+
+  .story-body {
+    padding: 0 1.25rem 1.25rem;
+    display: none;
+    transition: all 0.3s;
+  }
+  .story-body.open { display: block; }
+
+  .story-section { margin-bottom: 1rem; }
+  .story-section-label {
+    font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .story-section-label .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .dot-frase { background: var(--accent); }
+  .dot-tecnico { background: var(--info); }
+  .dot-legenda { background: var(--success); }
+
+  .frase-efeito {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+    border-left: 3px solid var(--accent);
+    padding-left: 1rem;
+  }
+
+  .tecnico-box {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--soft);
+    line-height: 1.6;
+  }
+  .tecnico-box strong { color: var(--info); }
+
+  .legenda-box {
+    background: rgba(122,232,176,0.06);
+    border: 1px solid rgba(122,232,176,0.2);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--text);
+    position: relative;
+  }
+
+  .copy-btn {
+    position: absolute; top: 0.5rem; right: 0.5rem;
+    background: transparent; border: none;
+    color: var(--muted); cursor: pointer; font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: color 0.2s;
+  }
+  .copy-btn:hover { color: var(--success); }
+
+  /* ── CHAT ── */
+  .chat-area {
+    display: flex; flex-direction: column;
+    height: calc(100vh - 200px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .chat-messages {
+    flex: 1; overflow-y: auto;
+    padding: 1.5rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    scroll-behavior: smooth;
+  }
+
+  .msg {
+    max-width: 80%;
+    line-height: 1.6;
+    font-size: 0.9rem;
+  }
+  .msg.agent {
+    align-self: flex-start;
+  }
+  .msg.user {
+    align-self: flex-end;
+  }
+
+  .msg-bubble {
+    padding: 0.85rem 1.1rem;
+    border-radius: 14px;
+    line-height: 1.6;
+  }
+  .msg.agent .msg-bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    color: var(--text);
+  }
+  .msg.user .msg-bubble {
+    background: rgba(232,201,122,0.15);
+    border: 1px solid rgba(232,201,122,0.3);
+    border-bottom-right-radius: 4px;
+    color: var(--text);
+  }
+
+  .msg-label {
+    font-size: 0.7rem; color: var(--muted);
+    margin-bottom: 0.3rem;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+
+  .chat-input-row {
+    display: flex; gap: 0.75rem;
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem;
+    outline: none;
+    resize: none;
+    max-height: 120px;
+    overflow-y: auto;
+    transition: border-color 0.2s;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+
+  .send-btn {
+    width: 42px; height: 42px; align-self: flex-end;
+    background: var(--accent);
+    border: none; border-radius: 10px;
+    cursor: pointer;
+    color: #0d0d0f;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .send-btn:hover { background: var(--accent2); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* typing indicator */
+  .typing { display: flex; gap: 4px; align-items: center; padding: 0.5rem 0; }
+  .typing span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted);
+    animation: bounce 1s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%,60%,100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  /* ── ACTIONS ── */
+  .action-bar {
+    display: flex; gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── PRINT / PDF ── */
+  @media print {
+    header, .tabs, .action-bar, .chat-area, .check-btn, .copy-btn { display: none !important; }
+    main { max-width: 100%; padding: 0; }
+    .story-body { display: block !important; }
+    body { background: white; color: black; }
+    .story-card { border: 1px solid #ccc; break-inside: avoid; }
+    .frase-efeito { color: black; }
+    .story-title { color: black; }
+    .event-name { color: black; }
+  }
+
+  /* ── EMPTY / ERROR states ── */
+  .empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+  }
+  .empty .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* divider */
+  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+  /* tooltip copy feedback */
+  .copied-toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--success);
+    color: #0d0d0f;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .copied-toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo-mark">S</div>
+    <span class="logo-text">Story<span>Agent</span></span>
+    <span class="header-badge">Cobertura de Eventos</span>
+  </header>
+
+  <main>
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('briefing')" id="tab-briefing">
+        📋 Briefing
+      </button>
+      <button class="tab" onclick="showTab('roteiro')" id="tab-roteiro" disabled>
+        🎬 Roteiro ao Vivo
+      </button>
+      <button class="tab" onclick="showTab('chat')" id="tab-chat" disabled>
+        💬 Tirar Dúvidas
+      </button>
+    </div>
+
+    <!-- ===== TAB BRIEFING ===== -->
+    <div id="tab-briefing-content">
+
+      <div id="cors-warning" style="display:none; background:rgba(232,201,122,0.08); border:1px solid rgba(232,201,122,0.35); border-radius:10px; padding:0.9rem 1.2rem; margin-bottom:1.5rem; font-size:0.85rem; line-height:1.7;">
+        ⚠️ <strong style="color:var(--accent)">Este arquivo precisa ser hospedado para funcionar.</strong><br>
+        Você está abrindo pelo navegador direto (<code style="font-family:'DM Mono',monospace;background:rgba(255,255,255,0.06);padding:0.1rem 0.4rem;border-radius:4px;">file://</code>) — o browser bloqueia chamadas à API assim.<br>
+        <strong>Solução em 30 segundos:</strong> Acesse <a href="https://app.netlify.com/drop" target="_blank" style="color:var(--accent);text-decoration:underline;">app.netlify.com/drop</a> → arraste este arquivo HTML → abra o link que aparecer. Gratuito! 🚀
+      </div>
+
+      <p class="section-title">Briefing do Evento</p>
+      <p class="section-sub">Preencha as informações do evento para que o agente monte seu roteiro de stories personalizado.</p>
+
+      <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Tipo de Evento</label>
+            <select id="tipo-evento">
+              <option value="">Selecione...</option>
+              <option value="casamento">💍 Casamento</option>
+              <option value="formatura">🎓 Formatura</option>
+              <option value="aniversario">🎂 Aniversário / 15 anos</option>
+              <option value="corporativo">💼 Evento Corporativo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Nome do(a) Cliente / Evento</label>
+            <input type="text" id="nome-evento" placeholder="Ex: Casamento Ana & Pedro">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label>Data do Evento</label>
+            <input type="date" id="data-evento">
+          </div>
+          <div class="field">
+            <label>Horário de Início</label>
+            <input type="time" id="horario-evento">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Local / Espaço</label>
+          <input type="text" id="local-evento" placeholder="Ex: Espaço Villa Jardins, Natal-RN">
+        </div>
+
+        <div class="field">
+          <label>Perfil do Instagram do Cliente</label>
+          <input type="text" id="instagram-cliente" placeholder="@nomedocliente">
+        </div>
+
+        <div class="field">
+          <label>Estilo / Tema do Evento</label>
+          <div class="chip-group" id="estilos-chips"></div>
+          <input type="text" id="estilo-custom" placeholder="Ou descreva o estilo livremente..." style="margin-top:0.5rem;">
+        </div>
+
+        <div class="field">
+          <label>Paleta de Cores / Decoração</label>
+          <input type="text" id="cores-evento" placeholder="Ex: rose gold, verde sage e branco">
+        </div>
+
+        <div class="field">
+          <label>Perfil do Público / Convidados</label>
+          <input type="text" id="publico-evento" placeholder="Ex: jovens 25-35 anos, família tradicional...">
+        </div>
+
+        <div class="field">
+          <label>Momentos / Agenda do Evento (opcional)</label>
+          <textarea id="agenda-evento" rows="3" placeholder="Ex: 18h cerimônia, 19h coquetel, 20h festa, 22h bolo..."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Observações Especiais (opcional)</label>
+          <textarea id="obs-evento" rows="2" placeholder="Ex: noiva quer privacidade no making of, não publicar rosto de crianças..."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Quantos Stories deseja no roteiro?</label>
+          <div class="chip-group" id="qtd-chips"></div>
+        </div>
+
+      </div>
+
+      <div class="divider"></div>
+
+      <button class="btn btn-primary" onclick="gerarRoteiro()" id="btn-gerar" style="width:100%;">
+        ✨ Gerar Roteiro com IA
+      </button>
+    </div>
+
+    <!-- ===== LOADING ===== -->
+    <div class="loading-screen" id="loading-screen">
+      <div class="spinner"></div>
+      <p class="loading-text" id="loading-msg">Analisando o evento...</p>
+    </div>
+
+    <!-- ===== TAB ROTEIRO ===== -->
+    <div id="tab-roteiro-content" style="display:none;">
+      <div id="event-header-block"></div>
+
+      <div class="action-bar">
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <button class="btn btn-ghost btn-sm" onclick="expandirTodos()">📂 Expandir Todos</button>
+        <button class="btn btn-ghost btn-sm" onclick="recolherTodos()">📁 Recolher Todos</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetChecks()">🔄 Resetar Progresso</button>
+        <button class="btn btn-ghost btn-sm" id="tab-briefing-btn" onclick="voltarBriefing()">← Novo Evento</button>
+      </div>
+
+      <div class="progress-bar-wrap">
+        <span class="progress-label">Progresso</span>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        <span class="progress-count" id="progress-count">0 / 0</span>
+      </div>
+
+      <div id="stories-list"></div>
+    </div>
+
+    <!-- ===== TAB CHAT ===== -->
+    <div id="tab-chat-content" style="display:none;">
+      <div class="chat-area">
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg agent">
+            <div class="msg-label">🤖 StoryAgent</div>
+            <div class="msg-bubble">Olá! Estou aqui para ajudar durante a cobertura. Pode me perguntar qualquer coisa sobre o evento, sugerir ajustes no roteiro ou pedir ideias extras de stories. O que precisa?</div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chat-input" placeholder="Pergunte algo ao agente..." rows="1" onkeydown="chatKeyDown(event)"></textarea>
+          <button class="send-btn" onclick="enviarMensagem()" id="send-btn">➤</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="copied-toast" id="copied-toast">✓ Copiado!</div>
+
+<script>
+// ── DADOS GLOBAIS ──
+let eventoData = {};
+let storiesGerados = [];
+let chatHistory = [];
+let openCards = new Set();
+
+// ── CHIPS INIT ──
+const estiloOptions = ['Romântico', 'Clássico', 'Rústico', 'Moderno', 'Boho', 'Luxo', 'Minimalista', 'Colorido', 'Festa'];
+const qtdOptions = ['8', '12', '16', '20'];
+
+function initChips() {
+  const ec = document.getElementById('estilos-chips');
+  estiloOptions.forEach(e => {
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.textContent = e;
+    c.onclick = () => c.classList.toggle('selected');
+    ec.appendChild(c);
+  });
+
+  const qc = document.getElementById('qtd-chips');
+  qtdOptions.forEach((q, i) => {
+    const c = document.createElement('div');
+    c.className = 'chip' + (i === 1 ? ' selected' : '');
+    c.textContent = q + ' stories';
+    c.dataset.val = q;
+    c.onclick = () => {
+      qc.querySelectorAll('.chip').forEach(x => x.classList.remove('selected'));
+      c.classList.add('selected');
+    };
+    qc.appendChild(c);
+  });
+}
+
+initChips();
+
+// Detecta se está rodando como file:// e mostra aviso
+if (window.location.protocol === "file:") {
+  document.getElementById("cors-warning").style.display = "block";
+}
+
+// ── TABS ──
+function showTab(tab) {
+  ['briefing','roteiro','chat'].forEach(t => {
+    document.getElementById('tab-' + t + '-content').style.display = 'none';
+    document.getElementById('tab-' + t).classList.remove('active');
+  });
+  document.getElementById('tab-' + tab + '-content').style.display = 'block';
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ── GERAR ROTEIRO ──
+async function gerarRoteiro() {
+  const tipo = document.getElementById('tipo-evento').value;
+  const nome = document.getElementById('nome-evento').value.trim();
+
+  if (!tipo || !nome) {
+    alert('Por favor, preencha pelo menos o tipo e nome do evento.');
+    return;
+  }
+
+  // Coletar dados
+  const estilosSel = [...document.querySelectorAll('#estilos-chips .chip.selected')].map(c => c.textContent);
+  const estiloCustom = document.getElementById('estilo-custom').value.trim();
+  const qtdSel = document.querySelector('#qtd-chips .chip.selected');
+  const qtd = qtdSel ? qtdSel.dataset.val : '12';
+
+  eventoData = {
+    tipo, nome,
+    data: document.getElementById('data-evento').value,
+    horario: document.getElementById('horario-evento').value,
+    local: document.getElementById('local-evento').value.trim(),
+    instagram: document.getElementById('instagram-cliente').value.trim(),
+    estilos: [...estilosSel, estiloCustom].filter(Boolean).join(', '),
+    cores: document.getElementById('cores-evento').value.trim(),
+    publico: document.getElementById('publico-evento').value.trim(),
+    agenda: document.getElementById('agenda-evento').value.trim(),
+    obs: document.getElementById('obs-evento').value.trim(),
+    qtd: parseInt(qtd)
+  };
+
+  // Mostrar loading
+  document.getElementById('tab-briefing-content').style.display = 'none';
+  const ls = document.getElementById('loading-screen');
+  ls.classList.add('visible');
+
+  const msgs = [
+    'Analisando o tipo de evento...',
+    'Criando arco narrativo...',
+    'Definindo sequência de stories...',
+    'Escrevendo frases de efeito...',
+    'Detalhando direção técnica...',
+    'Preparando legendas prontas...',
+    'Finalizando roteiro...'
+  ];
+  let mi = 0;
+  const msgEl = document.getElementById('loading-msg');
+  const interval = setInterval(() => {
+    mi = (mi + 1) % msgs.length;
+    msgEl.textContent = msgs[mi];
+  }, 1800);
+
+  try {
+    const prompt = buildPrompt(eventoData);
+    const resp = await fetch('/.netlify/functions/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        system: `Você é um agente especialista em cobertura de eventos para redes sociais, especialmente Stories do Instagram. Você conhece profundamente storytelling visual, copywriting para stories, direção técnica de captação (foto e vídeo), e criação de narrativas emocionais para eventos sociais e corporativos. Você SEMPRE responde SOMENTE com JSON válido, sem texto antes ou depois, sem markdown.`,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await resp.json();
+    const raw = data.content[0].text.trim().replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(raw);
+    storiesGerados = parsed.stories;
+    eventoData.narrativa = parsed.narrativa_geral;
+
+    clearInterval(interval);
+    ls.classList.remove('visible');
+    renderRoteiro();
+
+    // Habilitar tabs
+    document.getElementById('tab-roteiro').disabled = false;
+    document.getElementById('tab-chat').disabled = false;
+    showTab('roteiro');
+
+    // Init chat context
+    chatHistory = [];
+    initChatContext();
+
+  } catch(e) {
+    clearInterval(interval);
+    ls.classList.remove('visible');
+    document.getElementById('tab-briefing-content').style.display = 'block';
+    if (e.message === 'Failed to fetch' || e.name === 'TypeError') {
+      alert('⚠️ Erro de conexão com a API.\n\nEsse arquivo precisa ser aberto via servidor web (não direto pelo navegador como file://).\n\nSolução rápida:\n1. Acesse app.netlify.com\n2. Arraste este arquivo HTML para o Netlify Drop\n3. Abra o link gerado\n\nOu use uma extensão como "Live Server" no VS Code.');
+    } else {
+      alert('Erro ao gerar roteiro: ' + e.message);
+    }
+  }
+}
+
+function buildPrompt(d) {
+  const tipoMap = { casamento: 'Casamento', formatura: 'Formatura', aniversario: 'Aniversário/15 anos', corporativo: 'Evento Corporativo' };
+  return `Crie um roteiro completo de ${d.qtd} stories para cobertura ao vivo do seguinte evento:
+
+TIPO: ${tipoMap[d.tipo] || d.tipo}
+NOME/CLIENTE: ${d.nome}
+${d.data ? 'DATA: ' + d.data : ''}
+${d.horario ? 'HORÁRIO: ' + d.horario : ''}
+${d.local ? 'LOCAL: ' + d.local : ''}
+${d.instagram ? 'INSTAGRAM: ' + d.instagram : ''}
+${d.estilos ? 'ESTILO/TEMA: ' + d.estilos : ''}
+${d.cores ? 'PALETA/DECORAÇÃO: ' + d.cores : ''}
+${d.publico ? 'PÚBLICO: ' + d.publico : ''}
+${d.agenda ? 'AGENDA/MOMENTOS: ' + d.agenda : ''}
+${d.obs ? 'OBSERVAÇÕES: ' + d.obs : ''}
+
+Crie um roteiro com storytelling emocional progressivo — começa com antecipação/bastidores e vai crescendo até o clímax e encerramento.
+
+Para cada story, forneça:
+- numero (int)
+- momento: nome do momento do evento (ex: "Chegada dos Convidados")
+- titulo: título curto do story (ex: "O clima já é de festa")
+- frase_efeito: frase curta e impactante para inserir no story (máx 10 palavras, sem hashtag)
+- tipo_midia: "foto" ou "video"
+- descricao_midia: descrição visual do que captar (o que enquadrar, expressões, elementos)
+- direção_tecnica: orientações técnicas específicas de gravação/fotografia (ângulo, movimento de câmera, luz, duração do vídeo, som ambiente, etc.)
+- legenda: legenda pronta para publicar no story (pode incluir emojis, CTA suave, máx 2 linhas)
+- dica_extra: uma dica de ouro rápida para esse momento específico
+
+Responda APENAS com JSON no formato:
+{
+  "narrativa_geral": "Uma frase descrevendo o arco narrativo do evento",
+  "stories": [
+    {
+      "numero": 1,
+      "momento": "...",
+      "titulo": "...",
+      "frase_efeito": "...",
+      "tipo_midia": "foto",
+      "descricao_midia": "...",
+      "direcao_tecnica": "...",
+      "legenda": "...",
+      "dica_extra": "..."
+    }
+  ]
+}`;
+}
+
+// ── RENDER ROTEIRO ──
+function renderRoteiro() {
+  const total = storiesGerados.length;
+
+  // Header do evento
+  const tipoEmoji = { casamento:'💍', formatura:'🎓', aniversario:'🎂', corporativo:'💼' };
+  const emojiEvento = tipoEmoji[eventoData.tipo] || '🎉';
+  document.getElementById('event-header-block').innerHTML = `
+    <div class="event-header">
+      <div class="event-type-badge">${emojiEvento}</div>
+      <div class="event-info">
+        <div class="event-name">${eventoData.nome}</div>
+        <div class="event-meta">${eventoData.local || ''} ${eventoData.data ? '· ' + formatDate(eventoData.data) : ''} ${eventoData.horario ? '· ' + eventoData.horario : ''}</div>
+        ${eventoData.narrativa ? `<div style="margin-top:0.5rem;font-size:0.85rem;color:var(--soft);font-style:italic;">"${eventoData.narrativa}"</div>` : ''}
+      </div>
+      <div style="font-size:0.78rem;color:var(--muted);text-align:right;">
+        <div style="font-size:1.2rem;font-weight:700;color:var(--accent);">${total}</div>
+        stories
+      </div>
+    </div>
+  `;
+
+  updateProgress();
+
+  const list = document.getElementById('stories-list');
+  list.innerHTML = '';
+
+  storiesGerados.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'story-card';
+    card.id = 'card-' + i;
+
+    const mediaClass = s.tipo_midia === 'foto' ? 'foto' : 'video';
+    const mediaLabel = s.tipo_midia === 'foto' ? '📷 Foto' : '🎥 Vídeo';
+
+    card.innerHTML = `
+      <div class="story-header" onclick="toggleCard(${i})">
+        <div class="story-num" id="num-${i}">${String(s.numero).padStart(2,'0')}</div>
+        <div class="story-title-row">
+          <div class="story-title">${s.titulo}</div>
+          <div class="story-momento">${s.momento}</div>
+        </div>
+        <span class="media-badge ${mediaClass}">${mediaLabel}</span>
+        <button class="check-btn" id="check-${i}" onclick="toggleCheck(event, ${i})">✓</button>
+      </div>
+      <div class="story-body" id="body-${i}">
+        <div class="story-section">
+          <div class="story-section-label"><div class="dot dot-frase"></div> Frase de Efeito</div>
+          <div class="frase-efeito">${s.frase_efeito}</div>
+        </div>
+
+        <div class="story-section">
+          <div class="story-section-label"><div class="dot dot-tecnico" style="background:var(--info)"></div> O que captar</div>
+          <div class="tecnico-box">${s.descricao_midia}</div>
+        </div>
+
+        <div class="story-section">
+          <div class="story-section-label"><div class="dot" style="background:var(--video)"></div> Direção Técnica</div>
+          <div class="tecnico-box">${s.direcao_tecnica}</div>
+        </div>
+
+        <div class="story-section">
+          <div class="story-section-label"><div class="dot dot-legenda"></div> Legenda Pronta</div>
+          <div class="legenda-box" id="legenda-${i}">
+            ${s.legenda}
+            <button class="copy-btn" onclick="copiarLegenda(${i})">📋 copiar</button>
+          </div>
+        </div>
+
+        ${s.dica_extra ? `
+        <div class="story-section">
+          <div class="story-section-label"><div class="dot" style="background:var(--accent)"></div> Dica de Ouro ✨</div>
+          <div class="tecnico-box" style="border-left:3px solid var(--accent);">${s.dica_extra}</div>
+        </div>` : ''}
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function toggleCard(i) {
+  const body = document.getElementById('body-' + i);
+  if (openCards.has(i)) {
+    body.classList.remove('open');
+    openCards.delete(i);
+  } else {
+    body.classList.add('open');
+    openCards.add(i);
+  }
+}
+
+function toggleCheck(e, i) {
+  e.stopPropagation();
+  const card = document.getElementById('card-' + i);
+  card.classList.toggle('done');
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = storiesGerados.length;
+  const done = document.querySelectorAll('.story-card.done').length;
+  const pct = total ? (done / total) * 100 : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-count').textContent = done + ' / ' + total;
+}
+
+function expandirTodos() {
+  storiesGerados.forEach((_, i) => {
+    document.getElementById('body-' + i).classList.add('open');
+    openCards.add(i);
+  });
+}
+function recolherTodos() {
+  storiesGerados.forEach((_, i) => {
+    document.getElementById('body-' + i).classList.remove('open');
+    openCards.delete(i);
+  });
+}
+function resetChecks() {
+  document.querySelectorAll('.story-card.done').forEach(c => c.classList.remove('done'));
+  updateProgress();
+}
+
+function copiarLegenda(i) {
+  const el = document.getElementById('legenda-' + i);
+  const text = el.textContent.replace('📋 copiar', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copied-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  });
+}
+
+function voltarBriefing() {
+  showTab('briefing');
+  document.getElementById('tab-briefing-content').style.display = 'block';
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+
+// ── CHAT ──
+function initChatContext() {
+  chatHistory = [{
+    role: 'user',
+    content: `Contexto do evento que estou cobrindo agora:\n${JSON.stringify(eventoData, null, 2)}\n\nRoteiro gerado com ${storiesGerados.length} stories. Estou pronto para tirar dúvidas e receber dicas durante a cobertura.`
+  }, {
+    role: 'assistant',
+    content: `Entendido! Estou por dentro do roteiro do ${eventoData.nome}. Pode me perguntar sobre qualquer story, pedir ajuda com situações imprevistas, sugerir novos ângulos ou tirar qualquer dúvida técnica. Como posso ajudar?`
+  }];
+}
+
+function chatKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    enviarMensagem();
+  }
+}
+
+async function enviarMensagem() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = '';
+  addMsg('user', msg);
+  chatHistory.push({ role: 'user', content: msg });
+
+  const sendBtn = document.getElementById('send-btn');
+  sendBtn.disabled = true;
+
+  // typing
+  const typingId = addTyping();
+
+  try {
+    const resp = await fetch('/.netlify/functions/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `Você é o StoryAgent, um assistente especialista em cobertura de eventos para Stories do Instagram. Você está acompanhando um storymaker ao vivo durante um evento. Seja direto, prático e encorajador. Responda em português, de forma conversacional e objetiva. Máximo 3 parágrafos curtos.`,
+        messages: chatHistory
+      })
+    });
+
+    const data = await resp.json();
+    const reply = data.content[0].text;
+    removeTyping(typingId);
+    addMsg('agent', reply);
+    chatHistory.push({ role: 'assistant', content: reply });
+
+  } catch(e) {
+    removeTyping(typingId);
+    addMsg('agent', 'Ops, tive um problema de conexão. Tente novamente!');
+  }
+
+  sendBtn.disabled = false;
+}
+
+function addMsg(role, text) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+
+  const label = role === 'agent' ? '🤖 StoryAgent' : '👤 Você';
+  div.innerHTML = `<div class="msg-label">${label}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+let typingCounter = 0;
+function addTyping() {
+  const id = 'typing-' + (++typingCounter);
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg agent';
+  div.id = id;
+  div.innerHTML = `<div class="msg-label">🤖 StoryAgent</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+</script>
+</body>
+</html>
